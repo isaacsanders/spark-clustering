@@ -51,9 +51,7 @@ class FuzzyCMeans(val data: RDD[Vector],
       }
     }
 
-    var loopCount = 0
     do {
-      loopCount += 1
       val weights = clusteredData map {kv: ((Int, Vector), Double) =>
         val ((j, _), u) = kv
         (j, Math.pow(u, this.weightingExponent))
@@ -82,26 +80,26 @@ class FuzzyCMeans(val data: RDD[Vector],
         ((j, x), (u, distances))
       }
 
-      val localMax = sc.broadcast(clusteredDataWithDistances.values.map(_._2.values.max).max())
-      this.globalMax = this.globalMax.max(localMax.value)
-      if (this.globalMax == localMax.value) {
-        logInfo("Global max updated")
-      }
 
-      clusteredData = clusteredDataWithDistances.map {kv: ((Int, Vector), (Double, collection.Map[Int, Double])) =>
-        val ((j, x), (_, distances)) = kv
+
+      val crossGenClusteredData = clusteredDataWithDistances.map {kv: ((Int, Vector), (Double, collection.Map[Int, Double])) =>
+        val ((j, x), (oldU, distances)) = kv
 
         val dji: Double = distances(j)
         val newU = Math.pow(distances.values.map {(dki: Double) =>
           Math.pow(dji / dki, 2.0 / (this.weightingExponent - 1))
         }.sum, -1)
 
-        ((j, x), newU)
+        ((j, x), (oldU, newU))
       }
+
+      clusteredData = crossGenClusteredData.mapValues(_._2).cache()
+
+      val localMax = sc.broadcast(crossGenClusteredData.values.map { pair: (Double, Double) => pair._2 - pair._1 }.max())
+      this.globalMax = localMax.value
+      logInfo(s"Error updated: $globalMax")
     } while (this.globalMax >= this.sensitivityThreshold)
 
-
-    System.out.println(loopCount)
     this.model = new ClusteringModel(this.centroids)
     this.model
   }
