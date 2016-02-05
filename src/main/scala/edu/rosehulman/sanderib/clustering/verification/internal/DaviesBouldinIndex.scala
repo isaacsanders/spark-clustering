@@ -28,7 +28,7 @@ class DaviesBouldinIndex(override val data: RDD[Vector],
       val (i, j) = clusterIdPair
       val ci = model.centroids.get(i).get
       val cj = model.centroids.get(j).get
-      val indexValue = (compactness.get(i).get + compactness.get(j).get) / Math.sqrt(Vectors.sqdist(ci, cj))
+      val indexValue = (compactness.getOrElse[Double](i, 0.0) + compactness.getOrElse[Double](j, 0.0)) / Math.sqrt(Vectors.sqdist(ci, cj))
 
       (i, indexValue)
     }.groupByKey().mapValues(_.max).values
