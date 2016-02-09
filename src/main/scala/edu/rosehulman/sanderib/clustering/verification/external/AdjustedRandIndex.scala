@@ -9,19 +9,32 @@ class AdjustedRandIndex(override val data: RDD[Vector],
                         override val second: ClusteringModel) extends ExternalMeasure {
   override def run(): Unit = {
     val sc = data.sparkContext
-    val dataPairs = data.cartesian(data)
     val n = data.count()
+    val nChoose2 = choose2(n)
 
-    val nXX = dataPairs.map { pair: (Vector, Vector) =>
-      val (one, other) = pair
-      val sameInFirst: Boolean = first.predict(one) == first.predict(other)
-      val sameInSecond: Boolean = second.predict(one) == second.predict(other)
-      (sameInFirst, sameInSecond) // n11 and n00
-    }.countByValue()
+    val predictions = data
+      .map(vec => (first.predict(vec), second.predict(vec)))
+      .countByValue()
 
-    val n11 = nXX.get((true, true)).get
-    val n00 = nXX.get((false, false)).get
+    val n11: Long = predictions.map({ pair: ((Int, Int), Long) =>
+      val ((a, b), inSame) = pair
+      choose2(inSame)
+    }).sum
 
-    this.metric = (2 * (n11 + n00).toDouble) / (n * (n - 1))
+    val n00: Long = predictions.map({ pair: ((Int, Int), Long) =>
+      val ((a, b), inSame) = pair
+      val notInSame = predictions.filterKeys({ pair: (Int, Int) =>
+        val (c, d) = pair
+        !(c == a || d == b)
+      }).values.sum
+      notInSame * inSame
+    }).sum / 2
+
+
+    this.metric = (n11 + n00).toDouble / nChoose2
+  }
+
+  def choose2(n: Long): Long = {
+    n * (n - 1) / 2
   }
 }
