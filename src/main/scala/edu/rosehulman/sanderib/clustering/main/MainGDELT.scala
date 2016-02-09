@@ -13,7 +13,7 @@ object MainGDELT {
 
   def main(args: Array[String]) {
     if (args.length < 2) {
-      throw new Exception("USAGE: cluster_gdelt ALGORITHM_CLASS_NAME ALGORITHM_CONFIG_PATH [SAMPLING_FRACTION]")
+      throw new Exception("USAGE: cluster_gdelt.sh ALGORITHM_CLASS_NAME ALGORITHM_CONFIG_PATH [SAMPLING_FRACTION]")
     }
 
     val conf = new SparkConf().setAppName(this.getClass.getName)
