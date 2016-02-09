@@ -56,14 +56,13 @@ object InternalValidation {
     }
 
     if (constructor != null) {
-      var results = List[Double]()
-      1.to(100).foreach { _ =>
+      val results = 1.to(100).par.map { _ =>
         val measure: InternalMeasure = constructor.newInstance(data.sample(false, 0.001), model)
         measure.run()
-        results = measure.metric :: results
+        measure.metric
       }
 
-      sc.parallelize(results).saveAsTextFile(s"/data/isaac/$measureClassName/$algorithm/$samplingFraction/$timestamp")
+      sc.parallelize(results.toList).saveAsTextFile(s"/data/isaac/$measureClassName/$algorithm/$samplingFraction/$timestamp")
     }
   }
 }
