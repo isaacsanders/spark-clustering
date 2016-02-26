@@ -8,7 +8,7 @@ import org.apache.spark.rdd.RDD
 /**
  * Created by isaac on 1/18/16.
  */
-abstract class InternalMeasure extends Serializable with Logging {
+abstract class InternalMeasure extends Serializable {
   val model: ClusteringModel
   val data: RDD[Vector]
   var metric: Double = 0.0

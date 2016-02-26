@@ -5,7 +5,6 @@ import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.rdd.RDD
 
 import scala.collection.immutable.IntMap
-import scala.collection.parallel.mutable
 
 class ClusterAccuracy(override val data: RDD[Vector],
                       override val first: ClusteringModel,

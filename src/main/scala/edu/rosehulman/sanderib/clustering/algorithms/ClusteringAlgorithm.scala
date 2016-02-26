@@ -6,7 +6,7 @@ import org.apache.spark.Logging
 /**
  * Created by isaac on 11/24/15.
  */
-trait ClusteringAlgorithm extends Serializable with Logging {
+trait ClusteringAlgorithm extends Serializable {
   def run(): ClusteringModel
   var model: ClusteringModel
 }

@@ -6,7 +6,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.Map
 
-class ClusteringModel(var centroids: Map[Int, Vector]) extends Serializable with Logging {
+class ClusteringModel(var centroids: Map[Int, Vector]) extends Serializable {
   def clusterCenters: Array[Vector] = {
     this.centroids.values.toArray
   }
@@ -28,6 +28,5 @@ class ClusteringModel(var centroids: Map[Int, Vector]) extends Serializable with
 
   def save(sc: SparkContext, path: String): Unit = {
     sc.parallelize[(Int, Vector)](this.centroids.toList).saveAsObjectFile(path)
-    logInfo(s"Model saved to: $path")
   }
 }
